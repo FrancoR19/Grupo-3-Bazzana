@@ -250,7 +250,7 @@ Objetivo: que los 6 changes de la ola 1 se puedan desarrollar y mergear en cualq
   - `knowledge-base/10_preguntas_abiertas.md` §PA-02
 
 ### [C-04] `gestionar-pacientes`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado y archivado el 2026-11-21 (`openspec/changes/archive/2026-11-21-gestionar-pacientes`, spec `pacientes`)
 - **Owner / rama**: Romero / `feat/gestionar-pacientes`
 - **Capability**: `pacientes`
 - **Scope**:
