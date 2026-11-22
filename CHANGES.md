@@ -337,7 +337,7 @@ Objetivo: que los 6 changes de la ola 1 se puedan desarrollar y mergear en cualq
 > Se arrancan cuando sus dependencias están en `main`. Los owners son los por defecto y se pueden reasignar.
 
 ### [C-08] `cancelar-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado y archivado el 2026-11-21 (`openspec/changes/archive/2026-11-21-cancelar-turno`, delta aplicado a la spec `turnos`, ahora con 17 requisitos)
 - **Owner / rama**: Romero / `feat/cancelar-turno`
 - **Capability**: `turnos` (delta ADDED/MODIFIED sobre la spec archivada de C-02)
 - **Scope**:
