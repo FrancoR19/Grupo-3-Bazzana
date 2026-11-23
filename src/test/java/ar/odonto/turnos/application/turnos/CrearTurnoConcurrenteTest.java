@@ -22,6 +22,8 @@ import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.convention.TestBean;
 
@@ -48,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(properties = "turnos.test.contexto=concurrencia")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@WithMockUser(username = "usuario", roles = "ADMIN")
 class CrearTurnoConcurrenteTest {
 
     @TestBean(name = "reloj")
@@ -93,11 +96,13 @@ class CrearTurnoConcurrenteTest {
 
         CountDownLatch largada = new CountDownLatch(1);
         ExecutorService hilos = Executors.newFixedThreadPool(2);
+        var contextoSeguridad = SecurityContextHolder.getContext();
         try {
             List<Future<String>> resultados = new ArrayList<>();
             for (Paciente paciente : List.of(paciente1, paciente2)) {
                 Callable<String> reserva = () -> {
                     largada.await();
+                    SecurityContextHolder.setContext(contextoSeguridad);
                     try {
                         crearTurno.ejecutar(new CrearTurno.Comando(paciente.getId(), ana.getId(), sillon1.getId(),
                                 control.getId(), inicio, false));

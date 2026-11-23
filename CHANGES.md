@@ -270,7 +270,7 @@ Objetivo: que los 6 changes de la ola 1 se puedan desarrollar y mergear en cualq
   - `knowledge-base/03_actores_y_roles.md` §RBAC (pacientes)
 
 ### [C-05] `autenticacion-y-roles`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado y archivado el 2026-11-23 (`openspec/changes/archive/2026-11-23-autenticacion-y-roles`, spec `acceso`)
 - **Owner / rama**: Castillo / `feat/autenticacion-y-roles`
 - **Capability**: `acceso`
 - **Scope**:

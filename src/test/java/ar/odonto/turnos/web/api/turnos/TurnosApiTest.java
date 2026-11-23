@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.convention.TestBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@WithMockUser(username = "usuario", roles = "ADMIN")
 class TurnosApiTest {
 
     static final LocalDateTime AHORA = LocalDateTime.parse("2026-11-23T08:00");
@@ -127,7 +129,7 @@ class TurnosApiTest {
                     .andExpect(jsonPath("$.estado").value("RESERVADO"))
                     .andExpect(jsonPath("$.inicio").value("2026-11-23T10:00:00"))
                     .andExpect(jsonPath("$.fin").value("2026-11-23T10:30:00"))
-                    .andExpect(jsonPath("$.creadoPor").value("sistema"))
+                    .andExpect(jsonPath("$.creadoPor").value("usuario"))
                     .andExpect(jsonPath("$.creadoEn").value("2026-11-23T08:00:00"))
                     .andReturn().getResponse().getContentAsString();
             assertThat(cuerpo).contains("\"id\":" + idCreado);

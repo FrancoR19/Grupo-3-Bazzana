@@ -1,17 +1,14 @@
 package ar.odonto.turnos.infrastructure.config;
 
-import ar.odonto.turnos.domain.model.Solicitante;
+import ar.odonto.turnos.domain.error.CodigoError;
+import ar.odonto.turnos.domain.error.ReglaDeNegocioException;
 import ar.odonto.turnos.domain.port.UsuarioActual;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,8 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Tarea 5.2 de C-01 (design D8): seguridad permisiva mientras no exista C-05, y reemplazo automático
- * cuando la aplicación declara su propia cadena (lo que hará C-05).
+ * Seguridad de C-05 reemplaza a la permisiva de C-01 mediante {@code @ConditionalOnMissingBean}:
+ * cuando la aplicación declara su propia cadena (lo que hace C-05), la de C-01 se retira sin
+ * editar archivos compartidos.
  */
 class SeguridadPermisivaTest {
 
@@ -36,47 +34,26 @@ class SeguridadPermisivaTest {
         @Autowired ApplicationContext contexto;
 
         @Test
-        void unEndpointRespondeSinCredenciales() throws Exception {
-            // Llega al controlador (422 de negocio), no lo frena la seguridad (401/403).
+        void laCadenaDeSeguridadEsLaDeC05YNoLaPermisivaDeC01() {
+            assertThat(contexto.getBeansOfType(SecurityFilterChain.class))
+                    .containsOnlyKeys("cadenaDeSeguridad");
+        }
+
+        @Test
+        void unaRutaProtegidaSinCredencialesResponde401() throws Exception {
             mvc.perform(get("/test/errores/regla/TURNO_EN_PASADO"))
-                    .andExpect(status().isUnprocessableContent())
-                    .andExpect(jsonPath("$.codigo").value("TURNO_EN_PASADO"));
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.codigo").value("NO_AUTENTICADO"));
         }
 
         @Test
-        void elSolicitantePorDefectoEsSistemaConRolAdmin() {
-            assertThat(usuarioActual.solicitante()).isEqualTo(Solicitante.SISTEMA);
-        }
-
-        @Test
-        void hayUnaSolaCadenaDeSeguridad_laPermisiva() {
-            assertThat(contexto.getBeansOfType(SecurityFilterChain.class)).containsOnlyKeys("cadenaPermisiva");
-        }
-    }
-
-    @Nested
-    @SpringBootTest
-    @AutoConfigureMockMvc
-    class ConCadenaPropiaComoLaDeC05 {
-
-        @TestConfiguration
-        static class SeguridadDeC05 {
-            @Bean
-            SecurityFilterChain cadenaDeC05(HttpSecurity http) throws Exception {
-                return http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                        .httpBasic(Customizer.withDefaults())
-                        .build();
+        void elSolicitanteRequiereAutenticacion() {
+            try {
+                usuarioActual.solicitante();
+                throw new AssertionError("debería haber lanzado NO_AUTENTICADO");
+            } catch (ReglaDeNegocioException ex) {
+                assertThat(ex.codigo()).isEqualTo(CodigoError.NO_AUTENTICADO);
             }
-        }
-
-        @Autowired MockMvc mvc;
-        @Autowired ApplicationContext contexto;
-
-        @Test
-        void laCadenaPermisivaSeDesactivaYSinCredencialesResponde401() throws Exception {
-            assertThat(contexto.getBeansOfType(SecurityFilterChain.class)).containsOnlyKeys("cadenaDeC05");
-            mvc.perform(get("/test/errores/regla/TURNO_EN_PASADO"))
-                    .andExpect(status().isUnauthorized());
         }
     }
 }
